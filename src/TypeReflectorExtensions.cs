@@ -12,8 +12,15 @@ namespace Fidget.Extensions.Reflection
         /// Returns a fast reflection provider for the type.
         /// </summary>
         /// <typeparam name="T">Type to reflect.</typeparam>
+        
+        public static ITypeReflector<T> Reflect<T>() => TypeReflector<T>.Instance;
+
+        /// <summary>
+        /// Returns a fast reflection provider for the type.
+        /// </summary>
+        /// <typeparam name="T">Type to reflect.</typeparam>
         /// <param name="instance">Object instance whose type to reflect (optional).</param>
         
-        public static ITypeReflector<T> Reflect<T>( T instance = default(T) ) => TypeReflector<T>.Instance;
+        public static ITypeReflector<T> Reflect<T>( this T instance ) => Reflect<T>();
     }
 }
