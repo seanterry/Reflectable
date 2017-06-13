@@ -6,7 +6,7 @@ namespace Fidget.Extensions.Reflection
     /// Extension methods for working with type reflection.
     /// </summary>
 
-    public static class TypeExtensions
+    public static class TypeReflectorExtensions
     {
         /// <summary>
         /// Returns a fast reflection provider for the type.

@@ -9,8 +9,8 @@
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageReleaseNotes></PackageReleaseNotes>
         <Copyright>Copyright 2017 Sean Terry</Copyright>
-        <PackageLicenseUrl>https://github.com/seanterry42/Fidget.Extensions/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageProjectUrl>https://github.com/seanterry42/Fidget.Extensions/tree/master/src/Fidget.Extensions.Reflection</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/seanterry42/Fidget.Extensions.Reflection/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/seanterry42/Fidget.Extensions.Reflection</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
