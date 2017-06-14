@@ -75,5 +75,15 @@ namespace Fidget.Extensions.Reflection
         /// </remarks>
         
         IEnumerable<IPropertyReflector<T>> Selectable { get; }
+
+        /// <summary>
+        /// Tries to gets and changed updatable property values between two model instances.
+        /// </summary>
+        /// <param name="current">Current model values.</param>
+        /// <param name="comparer">Comparer containing original values.</param>
+        /// <param name="changes">Collection of detection value changes indexed by property name.</param>
+        /// <returns>True if changes were detected, otherwise false.</returns>
+
+        bool TryGetChanges( T current, T comparer, out IDictionary<string, object> changes );
     }
 }

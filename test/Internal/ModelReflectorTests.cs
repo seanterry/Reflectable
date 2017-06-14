@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Xunit;
@@ -460,6 +461,154 @@ namespace Fidget.Extensions.Reflection.Internal
             {
                 var expected = TypeReflector[propertyName];
                 Assert.DoesNotContain( expected, actual );
+            }
+        }
+
+        /// <summary>
+        /// Tests of the TryGetChanges method.
+        /// </summary>
+
+        public class TryGetChanges
+        {
+            class Model
+            {
+                [Key] public Guid? Key { get; set; }
+                
+                [ConcurrencyCheck] 
+                public Guid? Concurrency { get; set; }
+                
+                [NotMapped] 
+                public Guid? NotMapped { get; set; }
+                
+                [DatabaseGenerated( DatabaseGeneratedOption.Computed )] 
+                public Guid? Computed { get; set; }
+                
+                [DatabaseGenerated( DatabaseGeneratedOption.Identity )] 
+                public Guid? Identity { get; set; }
+
+                public Guid? Updatable1 { get; set; }
+                public Guid? Updatable2 { get; set; }
+                public Guid? Updatable3 { get; set; }
+            }
+
+            Model current = new Model();
+            Model comparer = new Model();
+            bool invoke( out IDictionary<string, object> changes ) => ModelReflector<Model>.Instance.TryGetChanges( current, comparer, out changes );
+
+            [Fact]
+            public void Requires_current()
+            {
+                current = null;
+                Assert.Throws<ArgumentNullException>( nameof( current ), () => invoke( out IDictionary<string, object> changes ) );
+            }
+
+            [Fact]
+            public void Requires_comparer()
+            {
+                comparer = null;
+                Assert.Throws<ArgumentNullException>( nameof( comparer ), () => invoke( out IDictionary<string, object> changes ) );
+            }
+
+            [Fact]
+            public void Returns_false_whenNoChanges()
+            {
+                var actual = invoke( out IDictionary<string, object> changes );
+                Assert.False( actual );
+                Assert.Empty( changes );
+            }
+
+            [Theory]
+            [InlineData( "a9604fcc-7c28-4c23-b9f5-81e86c864c71", null )]
+            [InlineData( null, "d3def891-8488-44b8-946e-cc79e418187b" )]
+            [InlineData( "0ef9019d-79a1-4a9e-a799-9f4af8f93762", "3e3dcee7-ce45-4bc4-bdd4-c9c3cbfc6a5d" )]
+            public void Throws_whenChangesToKey( string currentText, string comparerText )
+            {
+                void fill( Model model, string valueText ) =>
+                    model.Key = Guid.TryParse( valueText, out Guid value ) ? value : (Guid?)null;
+
+                fill( current, currentText );
+                fill( comparer, comparerText );
+
+                Assert.Throws<InvalidOperationException>( () => invoke( out IDictionary<string, object> changes ) );
+            }
+
+            [Theory]
+            [InlineData( "a9604fcc-7c28-4c23-b9f5-81e86c864c71", null )]
+            [InlineData( null, "d3def891-8488-44b8-946e-cc79e418187b" )]
+            [InlineData( "0ef9019d-79a1-4a9e-a799-9f4af8f93762", "3e3dcee7-ce45-4bc4-bdd4-c9c3cbfc6a5d" )]
+            public void Returns_false_whenChangesOnlyToNonUpdatableValues( string currentText, string comparerText )
+            {
+                void fill( Model model, string valueText )
+                {
+                    model.Concurrency = 
+                    model.Computed = 
+                    model.NotMapped = 
+                    model.Identity = (Guid.TryParse( valueText, out Guid value ) ? value : (Guid?)null);
+                }
+
+                fill( current, currentText );
+                fill( comparer, comparerText );
+
+                var actual = invoke( out IDictionary<string, object> changes );
+                Assert.False( actual );
+                Assert.Empty( changes );
+            }
+
+            [Theory]
+            [InlineData( "a9604fcc-7c28-4c23-b9f5-81e86c864c71", null )]
+            [InlineData( null, "d3def891-8488-44b8-946e-cc79e418187b" )]
+            [InlineData( "0ef9019d-79a1-4a9e-a799-9f4af8f93762", "3e3dcee7-ce45-4bc4-bdd4-c9c3cbfc6a5d" )]
+            public void Returns_true_whenChangesUpdatableValues( string currentText, string comparerText )
+            {
+                void fill( Model model, string valueText )
+                {
+                    model.Updatable1 =
+                    model.Updatable2 =
+                    model.Updatable3 = (Guid.TryParse( valueText, out Guid value ) ? value : (Guid?)null);
+                }
+
+                fill( current, currentText );
+                fill( comparer, comparerText );
+
+                var expectedChanges = new Dictionary<string,object>
+                {
+                    { nameof(current.Updatable1), current.Updatable1 },
+                    { nameof(current.Updatable2), current.Updatable2 },
+                    { nameof(current.Updatable3), current.Updatable3 },
+                };
+
+                var actual = invoke( out IDictionary<string, object> changes );
+                Assert.True( actual );
+                Assert.Equal( expectedChanges, changes );
+            }
+
+            [Theory]
+            [InlineData( "a9604fcc-7c28-4c23-b9f5-81e86c864c71", null )]
+            [InlineData( null, "d3def891-8488-44b8-946e-cc79e418187b" )]
+            [InlineData( "0ef9019d-79a1-4a9e-a799-9f4af8f93762", "3e3dcee7-ce45-4bc4-bdd4-c9c3cbfc6a5d" )]
+            public void Reports_changes_forOnlyUpdatedValues( string currentText, string comparerText )
+            {
+                void fill( Model model, string valueText )
+                {
+                    // intentionally set updatable2 to equal value
+                    model.Updatable2 = Guid.Empty;    
+
+                    model.Updatable1 =
+                    model.Updatable3 = (Guid.TryParse( valueText, out Guid value ) ? value : (Guid?)null);
+                }
+
+                fill( current, currentText );
+                fill( comparer, comparerText );
+
+                var expectedChanges = new Dictionary<string, object>
+                {
+                    { nameof(current.Updatable1), current.Updatable1 },
+                    { nameof(current.Updatable3), current.Updatable3 },
+                };
+
+                var actual = invoke( out IDictionary<string, object> changes );
+                Assert.True( actual );
+                Assert.Equal( expectedChanges, changes );
             }
         }
     }

@@ -350,5 +350,62 @@ namespace Fidget.Extensions.Reflection.Internal
                 Assert.False( actual );
             }
         }
+
+        /// <summary>
+        /// Tests of the GetValue method.
+        /// </summary>
+        
+        public class GetValue
+        {
+            class Model
+            {
+                public Guid? Value { get; set; }
+                public string String { get; set; }
+                public byte[] Array { get; set; }
+                public object Reference { get; set; }
+            }
+
+            Model source = new Model();
+            object invoke( string propertyName ) => TypeReflector<Model>.Instance[propertyName].GetValue( source );
+
+            [Fact]
+            public void Requires_source()
+            {
+                source = null;
+                Assert.Throws<ArgumentNullException>( nameof( source ), () => invoke( nameof( Model.Value ) ) );
+            }
+
+            [Fact]
+            public void Returns_propertyValue_whenValueType()
+            {
+                var expected = source.Value = Guid.NewGuid();
+                var actual = invoke( nameof(source.Value) );
+                Assert.Equal( expected, actual );
+            }
+
+            [Fact]
+            public void Returns_propertyValue_whenStringType()
+            {
+                var expected = source.String = Guid.NewGuid().ToString();
+                var actual = invoke( nameof( source.String ) );
+                Assert.Equal( expected, actual );
+            }
+
+            [Fact]
+            public void Returns_propertyReference_whenReferenceType()
+            {
+                var expected = source.Reference = new { value = Guid.NewGuid() };
+                var actual = invoke( nameof( source.Reference ) );
+                Assert.Same( expected, actual );
+            }
+
+            [Fact]
+            public void Returns_propertyReference_whenArrayType()
+            {
+                var expected = source.Array = Guid.NewGuid().ToByteArray();
+                var actual = invoke( nameof( source.Array ) );
+                Assert.Same( expected, actual );
+            }
+        }
     }
 }

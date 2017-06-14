@@ -22,3 +22,21 @@ Instances of `IPropertyReflector<T>` provide access to reflected characteristics
 * `PropertyInfo` - Reflected metadata for the property.
 * `Copy` - Shallow-copies the property value from a source instance of the declaring type to a target instance (See note about shallow copies above).
 * `Equal` - Returns whether the two property values are equal between two instances of the declaring type. This is done via `Object.Equals` except for arrays, which use `IStructuralEquatable.Equals` for a comparison of the array elements.
+
+### ModelReflectorExtensions.Model
+Returns an `IModelReflector<T>` that provides attribute-driven property information useful for the construction of database statements. These are driven by the standard attributes found in System.ComponentModel.Annotations:
+* `NotMappedAttribute`: Disregards the property.
+* `KeyAttribute`: Indicates the property participates in the primary key.
+* `DatabaseGeneratedAttribute`: Indicates whether the property is a database-generated value.
+* `ConcurrencyCheckAttribute`: Indicates the property participates in concurrency checking.
+* `ColumnAttribute`: Controls column position in their collections using the `Order` property. When the attribute is not present, they are sorted alphabetically.
+
+`IModelReflector<T>` members:
+* `Table`: Gets the table attribute on the model if one exists, otherwise null.
+* `Keys`: Gets the collection of properties decorated by `KeyAttribute`.
+* `Generated`: Gets the collection of properties decorated by `DatabaseGeneratedAttribute` with any option other than `None`.
+* `Concurrency`: Gets the collection of properties decorated by `ConcurrencyCheckAttribute`.
+* `Selectable`: Gets the collection of properties that are neither read-only nor decorated by `NotMappedAttribute`.
+* `Insertable`: Gets the collection of properties that are Selectable, but excluding those in the Generated and Concurrency collections.
+* `Updatable`: Gets the collection of properties that are Insertable, but excluding those in the Keys collection.
+* `TryGetChanges`: Detects changes to updatable properties and fills a dictionary with the names of the changed properties and their values.

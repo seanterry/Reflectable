@@ -92,9 +92,41 @@ namespace Fidget.Extensions.Reflection.Internal
             Keys = sort( mapped.Where( _=> _.PropertyInfo.GetCustomAttribute<KeyAttribute>() != null ) );
             Generated = sort( mapped.Where( _=> ( _.PropertyInfo.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption ?? DatabaseGeneratedOption.None ) != DatabaseGeneratedOption.None ) );
             Concurrency = sort( mapped.Where( _=> _.PropertyInfo.GetCustomAttribute<ConcurrencyCheckAttribute>() != null ) );
-            Insertable = sort( mapped.Where( _=> !_.IsReadOnly ).Except( Concurrency ).Except( Generated ) );
-            Updatable = sort( mapped.Where( _ => !_.IsReadOnly ).Except( Keys ).Except( Concurrency ).Except( Generated ) );
-            Selectable = sort( mapped.Where( _=> !_.IsReadOnly ) );
+            Selectable = sort( mapped.Where( _ => !_.IsReadOnly ) );
+            Insertable = sort( Selectable.Except( Concurrency ).Except( Generated ) );
+            Updatable = sort( Insertable.Except( Keys ) );
+        }
+
+        /// <summary>
+        /// Tries to gets and changed updatable property values between two model instances.
+        /// </summary>
+        /// <param name="current">Current model values.</param>
+        /// <param name="comparer">Comparer containing original values.</param>
+        /// <param name="changes">Collection of detection value changes indexed by property name.</param>
+        /// <returns>True if changes were detected, otherwise false.</returns>
+        
+        public bool TryGetChanges( T current, T comparer, out IDictionary<string,object> changes )
+        {
+            if ( current == null ) throw new ArgumentNullException( nameof( current ) );
+            if ( comparer == null ) throw new ArgumentNullException( nameof( comparer ) );
+            
+            changes = new Dictionary<string,object>();
+
+            // validate key
+            foreach ( var property in Keys )
+            {
+                if ( !property.Equal( current, comparer ) ) throw new InvalidOperationException( "Changed detected to key values" );
+            }
+
+            foreach ( var property in Updatable )
+            {
+                if ( !property.Equal( current, comparer ) )
+                {
+                    changes[property.PropertyInfo.Name] = property.GetValue( current );
+                }
+            }
+
+            return changes.Any();
         }
     }
 }

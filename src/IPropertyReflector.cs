@@ -52,5 +52,12 @@ namespace Fidget.Extensions.Reflection
         /// <param name="comparer">Target instance containing a property value to compare.</param>
 
         bool Equal( T source, T comparer );
+
+        /// <summary>
+        /// Returns the current value of the property.
+        /// </summary>
+        /// <param name="source">Source instance containing the property value to return.</param>
+
+        object GetValue( T source );
     }
 }

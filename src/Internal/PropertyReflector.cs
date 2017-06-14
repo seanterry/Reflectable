@@ -123,5 +123,17 @@ namespace Fidget.Extensions.Reflection.Internal
 
             return Equals( sourceValue, targetValue );
         }
+
+        /// <summary>
+        /// Returns the current value of the property.
+        /// </summary>
+        /// <param name="source">Source instance containing the property value to return.</param>
+        
+        public object GetValue( T source )
+        {
+            if ( source == null ) throw new ArgumentNullException( nameof( source ) );
+
+            return Accessor.Invoke( source );
+        }
     }
 }
