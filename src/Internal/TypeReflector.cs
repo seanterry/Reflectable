@@ -93,7 +93,7 @@ namespace Fidget.Extensions.Reflection.Internal
             IPropertyReflector<T> createReflector( PropertyInfo propertyInfo )
             {
                 var type = typeof( PropertyReflector<,> )
-                    .MakeGenericType( propertyInfo.DeclaringType, propertyInfo.PropertyType );
+                    .MakeGenericType( typeof(T), propertyInfo.PropertyType );
 
                 return (IPropertyReflector<T>)Activator
                     .CreateInstance( type, propertyInfo );

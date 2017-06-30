@@ -16,17 +16,19 @@ namespace Fidget.Extensions.Reflection.Internal
         
         public class Clone
         {
-            /// <summary>
-            /// Model class for testing.
-            /// </summary>
-            
-            class Model
+            abstract class BaseModel
             {
                 public Guid? Value { get; set; }
                 public byte[] Array { get; set; }
                 public string String { get; set; }
                 public object Reference { get; set; }
             }
+
+            /// <summary>
+            /// Model class for testing.
+            /// </summary>
+            
+            class Model : BaseModel {}
 
             /// <summary>
             /// Method instance argument.
