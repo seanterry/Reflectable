@@ -5,6 +5,9 @@ Extensions and helpers for common reflection operations:
 * Property equality comparison.
 * Minimize overhead imposed by reflection.
 
+### ReflectionComparer<T>
+An implementation of `IEqualityComparer<T>` that performs an equality comparison using property values (see the `Equal` method of `IPropertyReflector` below for how property values are compared).
+
 ### TypeReflectorExtensions.Reflect
 Returns an `ITypeReflector<T>` that provides access to reflected characteristics of a type. Currently, this is limited to the following methods:
 * `Clone` - creates a shallow copy of the source object into a new instance.
