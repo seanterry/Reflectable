@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard1.4</TargetFramework>
-        <VersionPrefix>1.2.0</VersionPrefix>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Version>2.0.0</Version>
         <PackageId>Fidget.Extensions.Reflection</PackageId>
         <Authors>Sean Terry</Authors>
         <Description>A fast reflection provider for working with properties.</Description>
@@ -14,16 +14,16 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <DocumentationFile>bin\Debug\netstandard1.4\Fidget.Extensions.Reflection.xml</DocumentationFile>
+      <DocumentationFile>bin\Debug\netstandard2.0\Fidget.Extensions.Reflection.xml</DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <DocumentationFile>bin\Release\netstandard1.4\Fidget.Extensions.Reflection.xml</DocumentationFile>
+      <DocumentationFile>bin\Release\netstandard2.0\Fidget.Extensions.Reflection.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.ComponentModel.Annotations" Version="4.3.0" />
-      <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+      <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.0" />
+      <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
     </ItemGroup>
 
 </Project>
