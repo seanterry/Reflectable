@@ -31,6 +31,18 @@ namespace Reflectable
         PropertyInfo Property { get; }
 
         /// <summary>
+        /// Gets whether the property is an array type.
+        /// </summary>
+
+        bool IsArray { get; }
+
+        /// <summary>
+        /// Gets whether the property is read-only.
+        /// </summary>
+
+        bool IsReadOnly { get; }
+
+        /// <summary>
         /// Copies the value of the property from the source instance to the target.
         /// </summary>
         /// <param name="source">Source instance containing the property value to copy.</param>

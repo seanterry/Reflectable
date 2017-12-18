@@ -79,20 +79,21 @@ namespace Reflectable.Internal
         /// <summary>
         /// Constructs a fast reflection provider for a property.
         /// </summary>
-        /// <param name="property">Reflection metadata that will back the instance.</param>
+        /// <param name="propertyName">Name of the property to reflect.</param>
         
-        public PropertyReflector( PropertyInfo property )
+        public PropertyReflector( string propertyName )
         {
-            Property = property ?? throw new ArgumentNullException( nameof(property) );
+            if ( propertyName == null ) throw new ArgumentNullException( nameof( propertyName ) );
+            
+            Property = typeof(T).GetProperty( propertyName ) ?? throw new ArgumentException( $"Property was not found on the declaring type {typeof(T)}", nameof(propertyName) );
+            
+            if ( Property.PropertyType != typeof(V) ) throw new ArgumentException( $"Property type does not match", nameof(propertyName) );
 
-            if ( property.DeclaringType != typeof(T) ) throw new ArgumentException( $"Declaring type {property.DeclaringType} does not match the expected type {typeof(T)}", nameof(property) );
-            if ( property.PropertyType != typeof(V) ) throw new ArgumentException( $"Property type {property.PropertyType} does not match the expected type {typeof(V)}", nameof(property) );
+            IsArray = Property.PropertyType.IsArray;
+            IsReadOnly = Property.SetMethod == null;
 
-            IsArray = property.PropertyType.IsArray;
-            IsReadOnly = property.SetMethod == null;
-
-            accessor = new Lazy<AccessorDelegate>( () => (AccessorDelegate)property.GetMethod.CreateDelegate( typeof(AccessorDelegate) ) );
-            mutator = new Lazy<MutatorDelegate>( () => (MutatorDelegate)property.SetMethod?.CreateDelegate( typeof(MutatorDelegate) ) );
+            accessor = new Lazy<AccessorDelegate>( () => (AccessorDelegate)Property.GetMethod.CreateDelegate( typeof(AccessorDelegate) ) );
+            mutator = new Lazy<MutatorDelegate>( () => (MutatorDelegate)Property.SetMethod?.CreateDelegate( typeof(MutatorDelegate) ) );
         }
 
         /// <summary>

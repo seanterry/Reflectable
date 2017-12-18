@@ -23,33 +23,34 @@ namespace Reflectable.Internal
 {
     public class PropertyReflector_T_V_Tests
     {
-        PropertyInfo property;
-        IPropertyReflector<T> instance<T,V>() => new PropertyReflector<T,V>( property );
-        IPropertyReflector<T> instance<T,V>( string property ) => new PropertyReflector<T,V>( typeof(T).GetProperty( property ) );
+        string propertyName;
+        IPropertyReflector<T> instance<T,V>( string property ) => new PropertyReflector<T,V>( property );
+        IPropertyReflector<T> instance<T,V>() => instance<T,V>( propertyName );
+        
 
         public class Constructor : PropertyReflector_T_V_Tests
         {
             public string Value { get; set; }
 
             [Fact]
-            public void requires_property()
+            public void requires_propertyName()
             {
-                property = null;
-                Assert.Throws<ArgumentNullException>( nameof(property), ()=>instance<Constructor,string>() );
+                propertyName = null;
+                Assert.Throws<ArgumentNullException>( nameof(propertyName), ()=>instance<Constructor,string>() );
             }
 
             [Fact]
             public void requires_matching_declaring_type()
             {
-                property = typeof(Constructor).GetProperty( nameof(Value) );
-                Assert.Throws<ArgumentException>( nameof(property), ()=>instance<object,string>() );
+                propertyName = nameof(Value);
+                Assert.Throws<ArgumentException>( nameof(propertyName), ()=>instance<object,string>() );
             }
 
             [Fact]
             public void requires_matching_property_type()
             {
-                property = typeof( Constructor ).GetProperty( nameof( Value ) );
-                Assert.Throws<ArgumentException>( nameof(property), ()=>instance<Constructor,int>() );
+                propertyName = nameof(Value);
+                Assert.Throws<ArgumentException>( nameof(propertyName), ()=>instance<Constructor,int>() );
             }
         }
 
@@ -60,8 +61,8 @@ namespace Reflectable.Internal
             [Fact]
             public void matches_metadata()
             {
-                var expected = property = typeof(Property).GetProperty( nameof(Value) );
-                var actual = instance<Property,string>().Property;
+                var expected = typeof(Property).GetProperty( nameof(Value) );
+                var actual = instance<Property,string>( nameof(Value) ).Property;
 
                 Assert.Equal( expected, actual );
             }
@@ -81,11 +82,12 @@ namespace Reflectable.Internal
             Model source = new Model();
             Model target = new Model();
             void invoke<TValue>() => instance<Model,TValue>().Copy( source, target );
-            
+            void invoke<TValue>( string property ) => instance<Model, TValue>( property ).Copy( source, target );
+
             [Fact]
             public void requires_source()
             {
-                property = typeof( Model ).GetProperty( nameof( Model.StringProp ) );
+                propertyName = nameof( Model.StringProp );
                 source = null;
                 Assert.Throws<ArgumentNullException>( nameof(source), ()=>invoke<string>() );
             }
@@ -93,7 +95,7 @@ namespace Reflectable.Internal
             [Fact]
             public void requires_target()
             {
-                property = typeof( Model ).GetProperty( nameof( Model.StringProp ) );
+                propertyName = nameof( Model.StringProp );
                 target = null;
                 Assert.Throws<ArgumentNullException>( nameof(target), ()=>invoke<string>() );
             }
@@ -101,7 +103,7 @@ namespace Reflectable.Internal
             [Fact]
             public void requires_writeable_property()
             {
-                property = typeof(Model).GetProperty( nameof( Model.ReadOnlyProp ) );
+                propertyName = nameof( Model.ReadOnlyProp );
                 Assert.Throws<InvalidOperationException>( ()=>invoke<Guid>() );
             }
 
@@ -109,8 +111,7 @@ namespace Reflectable.Internal
             public void when_value_type_copies_value()
             {
                 var expected = source.ValueProp = Guid.NewGuid();
-                property = typeof(Model).GetProperty( nameof(Model.ValueProp) );
-                invoke<Guid>();
+                invoke<Guid>( nameof(Model.ValueProp ) );
                 var actual = target.ValueProp;
 
                 Assert.Equal( expected, actual );
@@ -122,8 +123,7 @@ namespace Reflectable.Internal
             public void when_string_type_copies_string( string expected )
             {
                 source.StringProp = expected;
-                property = typeof(Model).GetProperty( nameof(Model.StringProp) );
-                invoke<string>();
+                invoke<string>( nameof(Model.StringProp) );
                 var actual = target.StringProp;
 
                 Assert.Equal( expected, actual );
@@ -141,8 +141,7 @@ namespace Reflectable.Internal
             public void when_reference_type_copies_reference( object expected )
             {
                 source.ReferenceProp = expected;
-                property = typeof(Model).GetProperty( nameof(Model.ReferenceProp) );
-                invoke<object>();
+                invoke<object>( nameof(Model.ReferenceProp) );
                 var actual = target.ReferenceProp;
 
                 Assert.True( ReferenceEquals( expected, actual ) );
@@ -152,8 +151,7 @@ namespace Reflectable.Internal
             public void when_array_type_clones_array()
             {
                 var expected = source.ArrayProp = Guid.NewGuid().ToByteArray();
-                property = typeof(Model).GetProperty( nameof(Model.ArrayProp) );
-                invoke<byte[]>();
+                invoke<byte[]>( nameof(Model.ArrayProp) );
                 var actual = target.ArrayProp;
 
                 // values should match, but the reference should not be the same
@@ -175,12 +173,13 @@ namespace Reflectable.Internal
             Model source = new Model();
             Model comparer = new Model();
             bool invoke<TValue>() => instance<Model,TValue>().Equal( source, comparer );
+            bool invoke<TValue>( string property ) => instance<Model, TValue>( property ).Equal( source, comparer );
 
             [Fact]
             public void requires_source()
             {
                 source = null;
-                property = typeof(Model).GetProperty( nameof(Model.ValueProp) );
+                propertyName = nameof(Model.ValueProp);
                 Assert.Throws<ArgumentNullException>( nameof(source), ()=>invoke<Guid?>() );
             }
 
@@ -188,7 +187,7 @@ namespace Reflectable.Internal
             public void requires_comparer()
             {
                 comparer = null;
-                property = typeof( Model ).GetProperty( nameof( Model.ValueProp ) );
+                propertyName = nameof( Model.ValueProp );
                 Assert.Throws<ArgumentNullException>( nameof( comparer ), () => invoke<Guid?>() );
             }
 
